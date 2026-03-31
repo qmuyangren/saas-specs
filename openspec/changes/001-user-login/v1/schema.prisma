@@ -1,0 +1,45 @@
+// 数据模型：用户登录
+// 生成时间：2026-03-31
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 用户表
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   // bcrypt 加密
+  role      String   @default("user")  // 用户角色
+  
+  // 登录失败记录
+  loginFailures Int   @default(0)
+  lockedUntil   DateTime?  // 锁定截止时间
+  
+  // 时间戳
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // 索引
+  @@index([email])
+}
+
+/// 登录日志表（可选，用于审计）
+model LoginLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  email     String
+  success   Boolean  // 是否成功
+  ipAddress String?  // IP 地址
+  userAgent String?  // 用户代理
+  createdAt DateTime @default(now())
+  
+  // 索引
+  @@index([userId])
+  @@index([createdAt])
+}
