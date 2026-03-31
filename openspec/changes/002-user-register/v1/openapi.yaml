@@ -1,0 +1,177 @@
+openapi: 3.0.0
+info:
+  title: 用户注册 API
+  version: 1.0.0
+  description: SaaS 平台用户注册接口规范
+
+servers:
+  - url: /api/v1
+
+paths:
+  /auth/register/send-code:
+    post:
+      summary: 发送注册验证码
+      tags:
+        - Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        '200':
+          description: 发送成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 0
+                  message:
+                    type: string
+                    example: "验证码已发送"
+                  data:
+                    type: object
+                    properties:
+                      expiresIn:
+                        type: integer
+                        description: 验证码有效期（秒）
+                        example: 300
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              example:
+                code: 1001
+                message: "邮箱格式不正确"
+        '429':
+          description: 发送过于频繁
+          content:
+            application/json:
+              example:
+                code: 1004
+                message: "验证码已发送，请 1 分钟后再试"
+
+  /auth/register:
+    post:
+      summary: 用户注册
+      tags:
+        - Registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - code
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 20
+                  example: "Abc123456"
+                code:
+                  type: string
+                  description: 邮箱验证码
+                  example: "123456"
+      responses:
+        '201':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              examples:
+                invalidEmail:
+                  summary: 邮箱格式错误
+                  value:
+                    code: 1001
+                    message: "邮箱格式不正确"
+                weakPassword:
+                  summary: 密码强度不足
+                  value:
+                    code: 1005
+                    message: "密码必须包含字母和数字，长度 6-20 位"
+                invalidCode:
+                  summary: 验证码错误
+                  value:
+                    code: 1006
+                    message: "验证码错误"
+        '409':
+          description: 邮箱已注册
+          content:
+            application/json:
+              example:
+                code: 1007
+                message: "该邮箱已注册"
+                data:
+                  email: "user@example.com"
+
+components:
+  schemas:
+    RegisterResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 0
+        message:
+          type: string
+          example: "注册成功"
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              description: JWT Token
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            expiresIn:
+              type: integer
+              description: Token 有效期（秒）
+              example: 604800
+            user:
+              $ref: '#/components/schemas/User'
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          example: "user@example.com"
+        role:
+          type: string
+          example: "user"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-03-31T00:00:00Z"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
