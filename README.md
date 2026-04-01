@@ -45,7 +45,7 @@ openspec/
 ### 步骤 1：PM 创建需求提案
 
 ```bash
-cd ~/.openclaw/workspace/saas-specs
+cd ~/.openclaw/workspace-arch/specs
 
 # 创建变更目录
 mkdir -p openspec/changes/003-new-feature/v1
@@ -122,8 +122,8 @@ sessions_spawn({
   task: `请读取以下 OpenSpec 规范文件并生成 NestJS 代码：
 
 规范文件：
-- ~/.openclaw/workspace/saas-specs/openspec/changes/003-new-feature/v1/openapi.yaml
-- ~/.openclaw/workspace/saas-specs/openspec/changes/003-new-feature/v1/schema.prisma
+- ~/.openclaw/workspace-arch/specs/openspec/changes/003-new-feature/v1/openapi.yaml
+- ~/.openclaw/workspace-arch/specs/openspec/changes/003-new-feature/v1/schema.prisma
 
 要求生成完整的 NestJS 模块到 src/modules/new-feature/`
 })
@@ -313,7 +313,7 @@ workspace-mobile/specs → ../saas-specs
 
 ```bash
 # 创建版本标签
-cd ~/.openclaw/workspace/saas-specs
+cd ~/.openclaw/workspace-arch/specs
 git tag -a v1.0.0 -m "Release v1.0.0: user-login, user-register"
 git push origin v1.0.0
 ```
