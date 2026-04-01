@@ -1,0 +1,188 @@
+openapi: 3.0.0
+info:
+  title: Password Reset API
+  version: 1.0.0
+  description: 用户密码重置功能 API
+
+servers:
+  - url: /api/v1
+    description: API v1
+
+paths:
+  /auth/send-reset-code:
+    post:
+      summary: 发送密码重置验证码
+      description: 向用户注册邮箱发送重置验证码
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 用户注册邮箱
+                  example: user@example.com
+      responses:
+        '200':
+          description: 验证码已发送
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 0
+                  message:
+                    type: string
+                    example: 验证码已发送
+                  data:
+                    type: object
+                    properties:
+                      expireIn:
+                        type: integer
+                        description: 验证码有效期（秒）
+                        example: 300
+        '400':
+          description: 请求错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 1001
+                  message:
+                    type: string
+                    example: 邮箱格式错误
+        '404':
+          description: 邮箱未注册
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 1003
+                  message:
+                    type: string
+                    example: 该邮箱未注册
+        '429':
+          description: 发送频率过高
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 1004
+                  message:
+                    type: string
+                    example: 发送频率过高，请稍后再试
+
+  /auth/reset-password:
+    post:
+      summary: 重置密码
+      description: 验证验证码并重置用户密码
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - code
+                - newPassword
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: 用户注册邮箱
+                  example: user@example.com
+                code:
+                  type: string
+                  description: 6 位验证码
+                  example: "123456"
+                newPassword:
+                  type: string
+                  description: 新密码
+                  example: newpass123
+      responses:
+        '200':
+          description: 密码重置成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 0
+                  message:
+                    type: string
+                    example: 密码重置成功
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                        description: JWT Token
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                      userId:
+                        type: string
+                        description: 用户 ID
+                        example: "123"
+        '400':
+          description: 请求错误
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 1005
+                  message:
+                    type: string
+                    example: 验证码错误或已过期
+        '400':
+          description: 密码强度不足
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 1006
+                  message:
+                    type: string
+                    example: 密码强度不足（6-20 位，含字母和数字）
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 错误码
+        message:
+          type: string
+          description: 错误信息
+        data:
+          type: object
+          description: 错误详情
